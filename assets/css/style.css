@@ -3848,6 +3848,17 @@ hr {
   outline: none;
   padding: 19px 24px;
 }
+.cs_contact_form_section_1 .cs_contact_form .cs_btn_lg:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.cs_contact_form_section_1 .cs_contact_form .cs_form_result {
+  margin-top: 16px;
+  color: var(--black);
+}
+.cs_contact_form_section_1 .cs_contact_form .cs_form_result:empty {
+  display: none;
+}
 @media (max-width: 991px) {
   .cs_contact_form_section_1 .cs_contact_form {
     padding: 8px 16px 16px;

@@ -3,7 +3,7 @@
 
   /*
   |--------------------------------------------------------------------------
-  | Template Name: KnowMax
+  | Template Name: Viora
   | Author: Laralink
   | Version: 1.0.0
   |--------------------------------------------------------------------------
@@ -67,7 +67,7 @@
   function preloader() {
     var endTime = new Date().getTime();
     var duration = (endTime - startTime) / 1000;
-    console.log("Loading Time: " + duration + " Seconds");
+    // console.log("Loading Time: " + duration + " Seconds");
     $(".cs_preloader_in").fadeOut();
     $(".cs_preloader").delay(150).fadeOut("slow");
   }
@@ -76,19 +76,35 @@
   02. Mobile Menu
   --------------------------------------------------------------*/
   function mainNav() {
-    $(".cs_nav").append('<span class="cs_menu_toggle"><span></span></span>');
+    $(".cs_nav").append(
+      '<span class="cs_menu_toggle" role="button" tabindex="0" aria-label="Toggle menu" aria-expanded="false"><span></span></span>',
+    );
     $(".menu-item-has-children").append(
-      '<span class="cs_menu_dropdown_toggle"><span></span></span>',
+      '<span class="cs_menu_dropdown_toggle" role="button" tabindex="0" aria-label="Toggle submenu" aria-expanded="false"><span></span></span>',
     );
     $(".cs_menu_toggle").on("click", function () {
-      $(this)
+      var isOpen = $(this)
         .toggleClass("cs_toggle_active")
         .siblings(".cs_nav_list_wrap")
-        .toggleClass("cs_active");
+        .toggleClass("cs_active")
+        .hasClass("cs_active");
+      $(this).attr("aria-expanded", isOpen);
     });
     $(".cs_menu_dropdown_toggle").on("click", function () {
       $(this).toggleClass("active").siblings("ul").slideToggle();
+      $(this).attr("aria-expanded", $(this).hasClass("active"));
       $(this).parent().toggleClass("active");
+    });
+    keyboardClick(".cs_menu_toggle, .cs_menu_dropdown_toggle");
+  }
+
+  // Trigger click on Enter / Space for non-button elements with role="button"
+  function keyboardClick(selector) {
+    $(selector).on("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        $(this).trigger("click");
+      }
     });
   }
 
@@ -312,6 +328,15 @@
   function accordian() {
     $(".cs_accordian").children(".cs_accordian_body").hide();
     $(".cs_accordian.active").children(".cs_accordian_body").show();
+    $(".cs_accordian_head").attr({
+      role: "button",
+      tabindex: 0,
+      "aria-expanded": false,
+    });
+    $(".cs_accordian.active")
+      .children(".cs_accordian_head")
+      .attr("aria-expanded", true);
+    keyboardClick(".cs_accordian_head");
     $(".cs_accordian_head").on("click", function () {
       $(this)
         .parent(".cs_accordian")
@@ -328,6 +353,12 @@
       /* Accordian Active Class */
       $(this).parents(".cs_accordian").addClass("active");
       $(this).parent(".cs_accordian").siblings().removeClass("active");
+      $(this)
+        .parent(".cs_accordian")
+        .siblings()
+        .children(".cs_accordian_head")
+        .attr("aria-expanded", false);
+      $(this).attr("aria-expanded", true);
     });
   }
 
@@ -337,6 +368,8 @@
   if ($.exists("#cs_form")) {
     const form = document.getElementById("cs_form");
     const result = document.getElementById("cs_result");
+    const submitBtn = form.querySelector('button[type="submit"]');
+    let hideTimer;
 
     form.addEventListener("submit", function (e) {
       const formData = new FormData(form);
@@ -346,7 +379,10 @@
         object[key] = value;
       });
       var json = JSON.stringify(object);
+      clearTimeout(hideTimer);
+      result.style.display = "";
       result.innerHTML = "Please wait...";
+      submitBtn.disabled = true;
 
       fetch("https://api.web3forms.com/submit", {
         method: "POST",
@@ -359,19 +395,16 @@
         .then(async (response) => {
           let json = await response.json();
           if (response.status == 200) {
-            result.innerHTML = json.message;
-          } else {
-            console.log(response);
-            result.innerHTML = json.message;
+            form.reset();
           }
+          result.innerHTML = json.message;
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
           result.innerHTML = "Something went wrong!";
         })
         .then(function () {
-          form.reset();
-          setTimeout(() => {
+          submitBtn.disabled = false;
+          hideTimer = setTimeout(() => {
             result.style.display = "none";
           }, 5000);
         });
