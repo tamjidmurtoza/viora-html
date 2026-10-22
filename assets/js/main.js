@@ -67,7 +67,6 @@
   function preloader() {
     var endTime = new Date().getTime();
     var duration = (endTime - startTime) / 1000;
-    // console.log("Loading Time: " + duration + " Seconds");
     $(".cs_preloader_in").fadeOut();
     $(".cs_preloader").delay(150).fadeOut("slow");
   }
